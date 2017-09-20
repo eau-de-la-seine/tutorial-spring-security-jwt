@@ -40,11 +40,11 @@ public class AuthenticationFilter extends GenericFilterBean {
 
 		if (!authentication.isAuthenticated()) {
 			log.trace("{} JWT Authentication failed", LOG_HEADER);
-		} else {
-			SecurityContextHolder
-				.getContext()
-				.setAuthentication(authentication);
 		}
+
+		SecurityContextHolder
+			.getContext()
+			.setAuthentication(authentication);
 
 		filterChain.doFilter(servletRequest, servletResponse);
 	}

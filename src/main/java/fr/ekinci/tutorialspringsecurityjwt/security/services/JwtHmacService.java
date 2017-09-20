@@ -32,18 +32,19 @@ public class JwtHmacService implements IJwtService {
 	static {
 		notAuthenticated = AuthenticationImpl.builder()
 			.authenticated(false)
+			.name("NOT_AUTHENTICATED_USER") // "Principal must not be null"
 			.build();
 	}
 
-	private final String key;
+	private final String secretKey;
 	private final SignatureAlgorithm algorithm;
 
 	@Autowired
 	public JwtHmacService(
-		@Value("${jwt.hmac.secret.key}") String key,
+		@Value("${jwt.hmac.secret.key}") String secretKey,
 		@Value("${jwt.hmac.algorithm:HS512}") SignatureAlgorithm algorithm
 	) {
-		this.key = key;
+		this.secretKey = secretKey;
 		this.algorithm = algorithm;
 	}
 
@@ -63,7 +64,7 @@ public class JwtHmacService implements IJwtService {
 
 		try {
 			final String subject = Jwts.parser()
-				.setSigningKey(key)
+				.setSigningKey(secretKey)
 				.parseClaimsJws(splittedAuthorizationHeader[1])
 				.getBody()
 				.getSubject();
@@ -82,7 +83,7 @@ public class JwtHmacService implements IJwtService {
 	public String sign(String subject) {
 		return Jwts.builder()
 			.setSubject(subject)
-			.signWith(algorithm, key)
+			.signWith(algorithm, secretKey)
 			.compact();
 	}
 }
