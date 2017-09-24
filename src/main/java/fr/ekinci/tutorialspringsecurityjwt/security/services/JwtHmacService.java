@@ -1,6 +1,7 @@
 package fr.ekinci.tutorialspringsecurityjwt.security.services;
 
 import fr.ekinci.tutorialspringsecurityjwt.security.models.AuthenticationImpl;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * Modes:
@@ -36,16 +38,19 @@ public class JwtHmacService implements IJwtService {
 			.build();
 	}
 
-	private final String secretKey;
 	private final SignatureAlgorithm algorithm;
+	private final Long duration;
+	private final String secretKey;
 
 	@Autowired
 	public JwtHmacService(
-		@Value("${jwt.hmac.secret.key}") String secretKey,
-		@Value("${jwt.hmac.algorithm:HS512}") SignatureAlgorithm algorithm
+		@Value("${jwt.hmac.algorithm:HS512}") SignatureAlgorithm algorithm,
+		@Value("${jwt.duration:#{null}}") Long duration,
+		@Value("${jwt.hmac.secret.key}") String secretKey
 	) {
-		this.secretKey = secretKey;
 		this.algorithm = algorithm;
+		this.duration = duration;
+		this.secretKey = secretKey;
 	}
 
 	@Override
@@ -81,9 +86,13 @@ public class JwtHmacService implements IJwtService {
 
 	@Override
 	public String sign(String subject) {
-		return Jwts.builder()
+		final JwtBuilder builder = Jwts.builder()
 			.setSubject(subject)
-			.signWith(algorithm, secretKey)
-			.compact();
+			// .setIssuedAt(new Date()) // Can't use for Integration test
+			.signWith(algorithm, secretKey);
+
+		return (duration != null) ?
+			builder.setExpiration(new Date(System.currentTimeMillis() + duration)).compact()
+			: builder.compact();
 	}
 }

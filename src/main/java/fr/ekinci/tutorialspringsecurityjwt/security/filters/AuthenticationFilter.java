@@ -1,6 +1,5 @@
 package fr.ekinci.tutorialspringsecurityjwt.security.filters;
 
-import fr.ekinci.tutorialspringsecurityjwt.security.exceptions.AuthenticationException;
 import fr.ekinci.tutorialspringsecurityjwt.security.services.IJwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

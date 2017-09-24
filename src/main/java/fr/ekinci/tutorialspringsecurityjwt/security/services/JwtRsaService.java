@@ -1,6 +1,7 @@
 package fr.ekinci.tutorialspringsecurityjwt.security.services;
 
 import fr.ekinci.tutorialspringsecurityjwt.security.models.AuthenticationImpl;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
@@ -13,6 +14,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Date;
 
 /**
  * Modes:
@@ -36,24 +41,60 @@ public class JwtRsaService implements IJwtService {
 	}
 
 	private final SignatureAlgorithm algorithm;
+	private final Long duration;
+	private final KeyPair rsaKeyPair;
 
 	@Autowired
 	public JwtRsaService(
-
+			@Value("${jwt.rsa.algorithm:RS512}") SignatureAlgorithm algorithm,
+			@Value("${jwt.duration:#{null}}") Long duration,
+			KeyPair rsaKeyPair
 	) {
-		// TODO
-		this.algorithm = null;
+		this.algorithm = algorithm;
+		this.duration = duration;
+		this.rsaKeyPair = rsaKeyPair;
 	}
 
 	@Override
 	public Authentication verify(HttpServletRequest request) {
-		// TODO
-		throw new UnsupportedOperationException();
+		final String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+		if (authorizationHeader == null) {
+			log.trace("{} Authorization header not found", LOG_HEADER);
+			return notAuthenticated;
+		}
+
+		final String[] splittedAuthorizationHeader = authorizationHeader.split(BEARER_PREFIX);
+		if (splittedAuthorizationHeader.length != 2) {
+			log.trace("{} Authorization header bad format", LOG_HEADER);
+			return notAuthenticated;
+		}
+
+		try {
+			final String subject = Jwts.parser()
+				.setSigningKey(rsaKeyPair.getPublic())
+				.parseClaimsJws(splittedAuthorizationHeader[1])
+				.getBody()
+				.getSubject();
+
+			return AuthenticationImpl.builder()
+				.authenticated(true)
+				.principal(subject)
+				.build();
+		} catch (SignatureException e) {
+			log.trace(String.format("%s Authorization header bad format", LOG_HEADER), e);
+			return notAuthenticated;
+		}
 	}
 
 	@Override
 	public String sign(String subject) {
-		// TODO
-		throw new UnsupportedOperationException();
+		final JwtBuilder builder = Jwts.builder()
+			.setSubject(subject)
+			// .setIssuedAt(new Date()) // Can't use for Integration test
+			.signWith(algorithm, rsaKeyPair.getPrivate());
+
+		return (duration != null) ?
+			builder.setExpiration(new Date(System.currentTimeMillis() + duration)).compact()
+			: builder.compact();
 	}
 }

@@ -22,7 +22,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final GenericFilterBean authenticationFilter;
 
 	@Autowired
-	public WebSecurityConfig(@Qualifier("jwtHmacService") IJwtService jwtService) {
+	public WebSecurityConfig(IJwtService jwtService) {
 		this.authenticationFilter = new AuthenticationFilter(jwtService);
 	}
 
