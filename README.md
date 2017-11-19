@@ -1,6 +1,6 @@
 # Spring Security with JWT
 
-Launch the project with: `mvn tomcat7:run`
+Launch the project with `mvn spring-boot:run` OR `mvn tomcat7:run`
 
 
 ## Project's content
@@ -77,6 +77,10 @@ The `AuthenticationController` contains :
 * A ***/me*** route and injects `ISessionService` for obtaining user's `Session` object.
 
 
+#### The Other Controllers
+
+The other controllers may be annotated with `@Secured` annotation. The role names must start with the `ROLE_` prefix.
+
 
 #### Spring Security classes summary
 
@@ -88,3 +92,54 @@ The `AuthenticationController` contains :
 * [org.springframework.security.config.annotation.web.builders.HttpSecurity](https://docs.spring.io/spring-security/site/docs/current/apidocs/org/springframework/security/config/annotation/web/builders/HttpSecurity.html)
 * [org.springframework.security.core.GrantedAuthority](https://docs.spring.io/spring-security/site/docs/current/apidocs/org/springframework/security/core/GrantedAuthority.html)
 * [org.springframework.security.access.annotation.Secured](https://docs.spring.io/autorepo/docs/spring-security/current/apidocs/org/springframework/security/access/annotation/Secured.html)
+
+
+## Spring Zuul (Proxy / Reverse-Proxy)
+
+We are now going to use ***Spring Zuul*** for redirecting authentified users to microservices.
+
+#### Installation
+
+Add this dependency to **pom.xml**:
+
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-zuul</artifactId>
+    </dependency>
+
+Activate Zuul with this annotation on your main class: `@EnableZuulProxy`
+
+
+#### Configuration
+
+Add proxy pass routes to your *application.properties* file. Example:
+
+    zuul.routes.foobar.stripPrefix=false
+    zuul.routes.foobar.path=/foobar/**
+    zuul.routes.foobar.url=http://localhost:25002
+
+This will will redirect from http://localhost:25001/foobar to http://localhost:25002/foobar
+
+
+#### Conditional routing
+
+The `setSendZuulResponse()` method allows you to redirect requests.
+
+Default value of `sendZuulResponse` is `true`.
+
+If `sendZuulResponse` is set to `false`, then routing is not done by Zuul.
+
+I used the `setSendZuulResponse()` method in `ZuulFilterImplementation#shouldFilter()` :
+
+    RequestContext.getCurrentContext()
+        .setSendZuulResponse(booleanValue)
+
+
+Sources:
+* https://spring.io/guides/gs/routing-and-filtering/
+* https://github.com/Netflix/zuul/wiki/How-it-Works
+* https://github.com/Netflix/zuul/wiki/Writing-Filters
+* https://github.com/spring-guides/gs-routing-and-filtering
+* https://stackoverflow.com/questions/29159462/spring-boot-cloud-zuul-proxy-404-error
+* https://github.com/spring-cloud-samples/sample-zuul-filters
+* https://cloud.spring.io/spring-cloud-netflix/multi/multi__router_and_filter_zuul.html

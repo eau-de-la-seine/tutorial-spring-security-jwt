@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonPropertyOrder({"id", "firstName", "lastName", "email"})
 public class Profile {
-	// TODO: Add other required fields
+	// TODO : Add other required fields if necessary
 	private String id, firstName, lastName, email;
 }

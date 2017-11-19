@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
+ * TODO : Create a real LoginService
+ *
  * @author Gokan EKINCI
  */
 @Primary
@@ -34,7 +36,7 @@ public class LoginServiceMock implements ILoginService {
 		ObjectMapper mapper,
 		IJwtService jwtService
 	) {
-		this.host = null; // TODO: Init in the future
+		this.host = null;
 		this.restTemplate = restTemplate;
 		this.dozer = dozer;
 		this.mapper = mapper;

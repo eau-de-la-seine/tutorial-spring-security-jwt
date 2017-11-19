@@ -1,9 +1,9 @@
 package fr.ekinci.tutorialspringsecurityjwt.security.configurations;
 
 import fr.ekinci.tutorialspringsecurityjwt.security.filters.AuthenticationFilter;
+import fr.ekinci.tutorialspringsecurityjwt.security.filters.ZuulFilterImplementation;
 import fr.ekinci.tutorialspringsecurityjwt.security.services.IJwtService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.GenericFilterBean;
+import com.netflix.zuul.ZuulFilter;
 
 /**
  * @author Gokan EKINCI
@@ -20,10 +21,12 @@ import org.springframework.web.filter.GenericFilterBean;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final GenericFilterBean authenticationFilter;
+	private final ZuulFilter zuulReverseProxyFilter;
 
 	@Autowired
 	public WebSecurityConfig(IJwtService jwtService) {
 		this.authenticationFilter = new AuthenticationFilter(jwtService);
+		this.zuulReverseProxyFilter = new ZuulFilterImplementation();
 	}
 
 	/**
@@ -36,7 +39,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				"/ping"
 			)
 			.mvcMatchers(HttpMethod.POST,
-				"/login"
+				"/authentication/login"
 			);
 	}
 
@@ -45,12 +48,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.csrf()
 				.disable()
+			/*
 			.authorizeRequests()
 				.anyRequest().authenticated()
-//			.and()
-//			.formLogin()
-//				.loginPage("/login").permitAll()
 			.and()
+			//*/
 			.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 }

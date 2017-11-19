@@ -2,7 +2,7 @@ package fr.ekinci.tutorialspringsecurityjwt.authentication.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ekinci.tutorialspringsecurityjwt.Application;
+import fr.ekinci.Application;
 import fr.ekinci.tutorialspringsecurityjwt.authentication.models.LoginRequest;
 import fr.ekinci.tutorialspringsecurityjwt.authentication.models.LoginResponse;
 import fr.ekinci.tutorialspringsecurityjwt.authentication.services.ILoginService;

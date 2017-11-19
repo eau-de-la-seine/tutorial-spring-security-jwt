@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
+@RequestMapping("/authentication")
 public class AuthenticationController {
 	private static final String LOG_HEADER = "[AUTHENTICATION][CONTROLLERS]";
 	private final ILoginService loginService;
